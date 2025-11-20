@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>קטלוג אהרוני - הזמנה ללקוח</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        :root {
+            --primary: #00897b;      /* ירקרק בסגנון אהרוני */
+            --primary-soft: #e0f2f1;
+            --accent: #01579b;
+            --bg: #f5f5f5;
+            --card-bg: #ffffff;
+            --border: #dddddd;
+            --danger: #c62828;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Rubik", "Assistant", sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg);
+            color: #222;
+        }
+
+        .app {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0.5rem 0.75rem 5rem;
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: var(--bg);
+            padding: 0.5rem 0 0.5rem;
+        }
+
+        .header-main {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .badge-row {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: var(--primary-soft);
+            color: var(--primary);
+            border-radius: 999px;
+            padding: 0.15rem 0.7rem;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .badge strong {
+            font-weight: 700;
+        }
+
+        .categories {
+            margin-top: 0.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+        }
+
+        .cat-btn {
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: #fff;
+            padding: 0.25rem 0.8rem;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+
+        .cat-btn.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+
+        .cat-btn:hover {
+            border-color: var(--primary);
+        }
+
+        .products {
+            margin-top: 0.75rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .product-card {
+            background: var(--card-bg);
+            border-radius: 0.6rem;
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .product-img {
+    width: 100%;
+    height: 180px; /* גובה אחיד לתמונה */
+    border-radius: 0.45rem;
+    background: white;     /* רקע לבן כמו שביקשת */
+    border: 1px solid #e5e5e5;
+    background-size: contain !important; /* מציג את כל התמונה */
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    margin-bottom: 0.3rem;
+}
+
+        .product-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .product-meta {
+            font-size: 0.78rem;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .product-price {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .qty-row {
+            margin-top: 0.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.4rem;
+        }
+
+        .qty-controls {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .qty-btn {
+            border: none;
+            background: #fafafa;
+            padding: 0.25rem 0.6rem;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .qty-btn:active {
+            background: #eee;
+        }
+
+        .qty-input {
+            width: 2.5rem;
+            border: none;
+            border-inline: 1px solid var(--border);
+            text-align: center;
+            padding: 0.15rem;
+            font-size: 0.9rem;
+        }
+
+        .qty-input:focus {
+            outline: none;
+        }
+
+        .unit-label {
+            font-size: 0.75rem;
+            color: #555;
+        }
+
+        .fab-order {
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 0.75rem;
+            z-index: 20;
+        }
+
+        .fab-btn {
+            border-radius: 999px;
+            border: none;
+            background: var(--primary);
+            color: #fff;
+            padding: 0.6rem 1.3rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .fab-btn span.count {
+            background: rgba(255,255,255,0.15);
+            padding: 0.1rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+        }
+
+        /* Order modal */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+        }
+
+        .modal {
+            background: #fff;
+            width: min(100% - 1.5rem, 900px);
+            max-height: 90vh;
+            border-radius: 0.75rem;
+            padding: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .modal-title {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .modal-close {
+            border-radius: 999px;
+            border: none;
+            background: #f1f1f1;
+            padding: 0.25rem 0.7rem;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            overflow: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        th, td {
+            border: 1px solid var(--border);
+            padding: 0.25rem 0.3rem;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        th {
+            background: #fafafa;
+        }
+
+        tfoot td {
+            font-weight: 700;
+            background: #f9f9f9;
+        }
+
+        .modal-footer {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn {
+            border-radius: 999px;
+            border: none;
+            padding: 0.35rem 0.9rem;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .btn-outline {
+            background: #fff;
+            border: 1px solid var(--border);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        @media (max-width: 600px) {
+            .products {
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            }
+        }
+
+        /* הדפסה – רק טופס ההזמנה */
+        @media print {
+            body * {
+                visibility: hidden !important;
+            }
+            #order-modal,
+            #order-modal * {
+                visibility: visible !important;
+            }
+            #order-modal {
+                position: static !important;
+                inset: auto !important;
+                transform: none !important;
+                box-shadow: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <header>
+        <div class="header-main">
+            <div class="title">אהרוני שיווק והפצה – קטלוג הזמנה</div>
+            <div class="badge-row">
+                <div class="badge">
+                    פריטים בסל: <strong id="summary-items">0</strong>
+                </div>
+                <div class="badge">
+                    סה״כ הזמנה: <strong id="summary-total">0 ₪</strong>
+                </div>
+            </div>
+        </div>
+        <div class="categories" id="categories"></div>
+    </header>
+
+    <main>
+        <div class="products" id="products"></div>
+    </main>
+</div>
+
+<!-- כפתור הזמנה צף -->
+<div class="fab-order">
+    <button class="fab-btn" id="open-order-btn" type="button">
+        הצגת הזמנה
+        <span class="count" id="fab-count">0 פריטים</span>
+    </button>
+</div>
+
+<!-- מודאל הזמנה -->
+<div id="order-backdrop" class="modal-backdrop" style="display:none;">
+    <div id="order-modal" class="modal">
+        <div class="modal-header">
+            <div class="modal-title">הזמנה ללקוח</div>
+            <button class="modal-close" id="close-order-btn" type="button">סגור</button>
+        </div>
+        <div class="modal-body">
+            <table>
+                <thead>
+                <tr>
+                    <th>מק״ט</th>
+                    <th>שם מוצר</th>
+                    <th>קטגוריה</th>
+                    <th>כמות</th>
+                    <th>יחידה</th>
+                    <th>מחיר יח׳ (₪)</th>
+                    <th>סה״כ (₪)</th>
+                </tr>
+                </thead>
+                <tbody id="order-table-body">
+                </tbody>
+                <tfoot>
+                <tr>
+                    <td colspan="3">סה״כ פריטים</td>
+                    <td id="order-total-items">0</td>
+                    <td></td>
+                    <td>סה״כ לתשלום</td>
+                    <td id="order-total-price">0</td>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+        <div class="modal-footer">
+            <div style="display:flex; flex-wrap:wrap; gap:0.4rem;">
+                <button class="btn btn-outline" id="export-csv-btn" type="button">הורדה ל-Excel (CSV)</button>
+                <button class="btn btn-primary" id="print-pdf-btn" type="button">ייצוא ל-PDF / הדפסה</button>
+            </div>
+            <button class="btn btn-danger" id="clear-cart-btn" type="button">נקה הזמנה</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ===========================
+    // 1. כאן מוסיפים את המוצרים
+    // ===========================
+    // שדה חובה: id, name, category, price
+    // אופציונלי: unit, image
+     const PRODUCTS = [
+  { id: "HDP-001", name: "כוס בירה 330 40 יח׳", category: "חד פעמי ואריזות", price: 200, unit: "יחידה", image: "images/חד פעמי ואריזות/כוס בירה 330 40 יח׳.webp" },
+  { id: "HDP-002", name: "כוסות אספרסו 4oz 50 יח׳", category: "חד פעמי ואריזות", price: 58, unit: "יחידה", image: "images/חד פעמי ואריזות/כוסות אספרסו 4oz.png" },
+  { id: "HDP-003", name: "כוסות נייר 8B 50 יח׳", category: "חד פעמי ואריזות", price: 70, unit: "יחידה", image: "images/חד פעמי ואריזות/כוסות נייר 8B.png" },
+  { id: "HDP-004", name: "כוסות פלסטיק לשתיה קרה 180 מ״ל", category: "חד פעמי ואריזות", price: 75, unit: "יחידה", image: "images/חד פעמי ואריזות/כוסות פלסטיק לשתיה קרה 180 מ״ל.png" },
+  { id: "HDP-005", name: "כף חד פעמי 100 יחידות", category: "חד פעמי ואריזות", price: 4.0, unit: "יחידה", image: "images/חד פעמי ואריזות/כף חד פעמי 100 יחידות.png" },
+  { id: "HDP-006", name: "כפית חד פעמי 100 יחידות", category: "חד פעמי ואריזות", price: 3.0, unit: "יחידה", image: "images/חד פעמי ואריזות/כפית חד פעמי 100 יחידות.png" },
+  { id: "HDP-007", name: "מזלג חד פעמי 100 יחידות", category: "חד פעמי ואריזות", price: 4.0, unit: "יחידה", image: "images/חד פעמי ואריזות/מזלג חד פעמי 100 יחידות.png" },
+  { id: "HDP-008", name: "סכין חד פעמי 100 יחידות", category: "חד פעמי ואריזות", price: 4.0, unit: "יחידה", image: "images/חד פעמי ואריזות/סכין חד פעמי 100 יחידות.png" },
+  { id: "HDP-009", name: "כפית קשיח - 50 יח׳", category: "חד פעמי ואריזות", price: 3.5, unit: "יחידה", image: "images/חד פעמי ואריזות/כפית קשיח - 50 יח׳.png" },
+  { id: "HDP-010", name: "מזלג קשיח - 50 יח׳", category: "חד פעמי ואריזות", price: 4.5, unit: "יחידה", image: "images/חד פעמי ואריזות/מזלג קשיח - 50 יח׳.png" },
+  { id: "HDP-011", name: "סכין קשיח - 50 יח׳", category: "חד פעמי ואריזות", price: 4.5, unit: "יחידה", image: "images/חד פעמי ואריזות/סכין קשיח - 50 יח׳.png" },
+  { id: "HDP-012", name: "כף קשיח - 50 יח׳", category: "חד פעמי ואריזות", price: 4.5, unit: "יחידה", image: "images/חד פעמי ואריזות/כף קשיח - 50 יח׳.png" },
+  { id: "BYZ-001", name: "מגב ספוג 40 ס״מ", category: "אביזרי ניקיון", price: 4.0, unit: "יחידה", image: "images/אביזרי ניקיון/מגב ספוג 40 ס״מ.jpeg" },
+  { id: "BYZ-002", name: "מטליות אלכוהול 70%", category: "אביזרי ניקיון", price: 38.0, unit: "יחידה", image: "images/אביזרי ניקיון/מטליות אלכוהול 70%.jpeg" },
+  { id: "BYZ-003", name: "דלי צבעוני 12 ליטר", category: "אביזרי ניקיון", price: 10.0, unit: "יחידה", image: "images/אביזרי ניקיון/דלי צבעוני 12 ליטר.png" },
+  { id: "BYZ-004", name: "מטלית רב שימושית 3 יח׳", category: "אביזרי ניקיון", price: 1.5, unit: "יחידה", image: "images/אביזרי ניקיון/מטליות לניקוי כללי - שלישייה .png" },
+  { id: "BYZ-005", name: "מטליות בד רב שימושיות 700 גרם", category: "אביזרי ניקיון", price: 15.0, unit: "יחידה", image: "images/אביזרי ניקיון/מטליות בד רב שימושיות 700 גרם.png" },
+  { id: "BYZ-006", name: "כרית יפנית 6 יח׳", category: "אביזרי ניקיון", price: 6.0, unit: "יחידה", image: "images/אביזרי ניקיון/כרית יפנית 6 יח_.png" },
+  { id: "BYZ-007", name: "מטליות לחות לניקוי כללי", category: "אביזרי ניקיון", price: 15.0, unit: "יחידה", image: "images/אביזרי ניקיון/מטליות לחות לניקוי כללי.jpeg" },
+  { id: "BYZ-008", name: "ספוג הפלא", category: "אביזרי ניקיון", price: 4.0, unit: "יחידה", image: "images/אביזרי ניקיון/ספוג הפלא.png" },
+  { id: "BYZ-009", name: "גליל מטליות רב שימושית", category: "אביזרי ניקיון", price: 15.0, unit: "יחידה", image: "images/אביזרי ניקיון/גליל מטליות רב שימושית.png" },
+  { id: "BYZ-010", name: "מטלית מיקרופייבר -חמישייה", category: "אביזרי ניקיון", price: 5.0, unit: "יחידה", image: "images/אביזרי ניקיון/מטלית מיקרופייבר -חמישייה.png" },
+  { id: "BYZ-011", name: "כפפות ניטריל ללא אבקה", category: "אביזרי ניקיון", price: 12.0, unit: "יחידה", image: "images/אביזרי ניקיון/כפפות ניטריל ללא אבקה.jpeg" },
+  { id: "BYZ-012", name: "סחבה מיקרופייבר - שלישייה", category: "אביזרי ניקיון", price: 12.0, unit: "יחידה", image: "images/אביזרי ניקיון/סחבה מיקרופייבר - שלישייה.png" },
+  { id: "MVT-001", name: "נייר ניגוב ידיים סלים רול", category: "מוצרי נייר", price: 75.0, unit: "יחידה", image: "images/מוצרי נייר/נייר ניגוב ידיים סלים רול.jpeg" },
+  { id: "MVT-002", name: "נייר ניגוב תאית 6 יחידות", category: "מוצרי נייר", price: 48.0, unit: "יחידה", image: "images/מוצרי נייר/נייר ניגוב תאית 6 יחידות.png" },
+  { id: "MVT-003", name: "נייר ניגוב ידיים נטורה 1:6", category: "מוצרי נייר", price: 26.0, unit: "יחידה", image: "images/מוצרי נייר/נייר ניגוב ידיים נטורה 1:6.jpeg" },
+  { id: "MVT-004", name: "נייר ניגוב ידיים טבורי 3232S", category: "מוצרי נייר", price: 90.0, unit: "יחידה", image: "images/מוצרי נייר/נייר ניגוב ידיים טבורי 3232S.png" },
+  { id: "MVT-005", name: "נייר טואלט קומפקט 80 - 36 יח׳", category: "מוצרי נייר", price: 97.0, unit: "יחידה", image: "images/מוצרי נייר/נייר טואלט קומפקט 80 - 36 יח_.png" },
+  { id: "MVT-006", name: "נייר טואלט ג׳מבו טישו 1_12", category: "מוצרי נייר", price: 39.0, unit: "יחידה", image: "images/מוצרי נייר/נייר טואלט ג׳מבו טישו 1_12.png" },
+  { id: "MVT-007", name: "גליל תעשייתי ורד צר", category: "מוצרי נייר", price: 48.0, unit: "יחידה", image: "images/מוצרי נייר/גליל תעשייתי ורד צר.jpeg" },
+  { id: "MVT-008", name: "גליל נייר תעשייתי גולד", category: "מוצרי נייר", price: 48.0, unit: "יחידה", image: "images/מוצרי נייר/גליל נייר תעשייתי גולד.png" },
+  { id: "MVT-009", name: "גליל נייר תעשייתי 5004", category: "מוצרי נייר", price: 60.0, unit: "יחידה", image: "images/מוצרי נייר/גליל נייר תעשייתי 5004.png" },
+  { id: "MVT-010", name: "צץ רץ 4000", category: "מוצרי נייר", price: 48.0, unit: "יחידה", image: "images/מוצרי נייר/צץ רץ 4000.jpeg" },
+  { id: "MVT-011", name: "צץ רץ דו שכבתי 2500 יחידות", category: "מוצרי נייר", price: 72.0, unit: "יחידה", image: "images/מוצרי נייר/צץ רץ דו שכבתי 2500 יחידות.png" },
+  { id: "MVT-012", name: "נייר צילום A4", category: "מוצרי נייר", price: 16.0, unit: "יחידה", image: "images/מוצרי נייר/נייר צילום A4.jpeg" },
+  { id: "MVT-013", name: "ממחטות אף טישו", category: "מוצרי נייר", price: 2.0, unit: "יחידה", image: "images/מוצרי נייר/ממחטות אף טישו.png" },
+  { id: "SHK-001", name: "שקיות מזון 300 יח׳", category: "שקיות", price: 9.0, unit: "יחידה", image: "images/שקיות/שקיות מזון.png" },
+  { id: "SHK-002", name: "אשפתון 50/70 LD 20 יח׳", category: "שקיות", price: 4.0, unit: "יחידה", image: "images/שקיות/אשפתון 50 LD.png"  },
+  { id: "SHK-003", name: "שקיות אשפה 75-90", category: "שקיות", price: 7.0, unit: "יחידה", image: "images/שקיות/שקיות אשפה 75-90.png" },
+  { id: "SHK-004", name: "שקיות אשפה 75-85", category: "שקיות", price: 4.5, unit: "יחידה", image: "images/שקיות/שקיות אשפה 75-85.png" },
+  { id: "SHK-005", name: "אשפתון מרשרש 50/70 - 60יח׳", category: "שקיות", price: 4.5, unit: "יחידה", image: "images/שקיות/אשפתון מרשרש 50-70 - 60יח_.png" },
+  { id: "TYP-001", name: "דאודורנט גברים nivea", category: "טיפוח והיגיינה", price: 9.9, unit: "יחידה", image: "images/טיפוח והיגיינה/דאודורנט גברים nivea.png" },
+  { id: "TYP-002", name: "דאודורנט גברים axe", category: "טיפוח והיגיינה", price: 11.0, unit: "יחידה", image: "images/טיפוח והיגיינה/דאודורנט גברים axe.jpg" },
+  { id: "TYP-003", name: "טיטולים למבוגרים 14 יח׳", category: "טיפוח והיגיינה", price: 50.0, unit: "יחידה", image: "images/טיפוח והיגיינה/טיטולים למבוגרים 14 יח׳.png" },
+  { id: "TYP-004", name: "מגבונים לחים", category: "טיפוח והיגיינה", price: 2.0, unit: "יחידה", image: "images/טיפוח והיגיינה/מגבונים לחים.png" },
+  { id: "TYP-005", name: "מגן תחתון אולוויז נורמל פרש 56 יח'", category: "טיפוח והיגיינה", price: 22.0, unit: "יחידה", image: "images/טיפוח והיגיינה/מגן תחתון אולוויז נורמל פרש 56 יח.jpg" },
+  { id: "TYP-007", name: "מברשות שיניים אורל בי שישייה", category: "טיפוח והיגיינה", price: 12.0, unit: "יחידה", image: "images/טיפוח והיגיינה/מברשות שיניים אורל בי שישייה.jpg" },
+  { id: "TYP-009", name: "תחליב רחצה פלמוליב", category: "טיפוח והיגיינה", price: 20.0, unit: "יחידה", image: "images/טיפוח והיגיינה/תחליב רחצה פלמוליב.jpg" },
+  { id: "TYP-010", name: "DOVE סבון מוצק קלאסי רביעיה 4*90 גר'נה", category: "טיפוח והיגיינה", price: 12.0, unit: "יחידה", image: "images/טיפוח והיגיינה/תמוDOVE סבון מוצק קלאסי רביעיה 4*90 גרנה1.jpg" },
+  { id: "SHV-001", name: "תה ויסוצקי 2000 יח׳", category: "שונים", price: 120.0, unit: "יחידה", image: "images/שונים/תה ויסוצקי 2000 יח׳.png" },
+  { id: "SHV-002", name: "קפה טורקי 100 גרם", category: "שונים", price: 9.5, unit: "יחידה", image: "images/שונים/קפה טורקי 100 גרם.jpg" },
+  { id: "SHV-003", name: "קפה שחור 1 קילו", category: "שונים", price: 57.0, unit: "יחידה", image: "images/שונים/קפה שחור 1 קילו.png" },
+  { id: "SHV-004", name: "גליל קופה 80/80 5 יח׳", category: "שונים", price: 20.0, unit: "יחידה", image: "images/שונים/גליל קופה 80.jpeg" },
+  { id: "SHV-005", name: "גליל קופה 57/40 יח׳", category: "שונים", price: 25.0, unit: "יחידה", image: "images/שונים/גליל קופה 57.jpeg" },
+  { id: "SHV-006", name: "סרט הדבקה שישייה", category: "שונים", price: 36.0, unit: "יחידה", image: "images/שונים/סרט הדבקה שישייה.png" },
+  { id: "SHV-007", name: "ניילון נצמד 45 סמ רוחב", category: "שונים", price: 15.0, unit: "יחידה", image: "images/שונים/ניילון נצמד 45 סמ רוחב.png" },
+  { id: "SHV-008", name: "רדיד אלומיניום  50 מטר", category: "שונים", price: 35.0, unit: "יחידה", image: "images/שונים/רדיד אלומיניום  50 מטר.png" },
+  { id: "SHV-009", name: "packing list 16/22", category: "שונים", price: 190.0, unit: "יחידה", image: "images/שונים/packing list.jpg" },
+  { id: "SHV-010", name: "גלילות ניילון נצמד לאריזה", category: "שונים", price: 4.25, unit: "יחידה", image: "images/שונים/גלילות ניילון נצמד לאריזה.png" },
+  { id: "SHV-011", name: "מארז ניילון נצמד 3 ק״ג צבע שקוף", category: "שונים", price: 25.0, unit: "יחידה", image: "images/שונים/מארז ניילון נצמד 3 קג צבע שקוף 6 יח׳.png" },
+  { id: "SHV-012", name: "בנזין לבן טהור חצי ליטר", category: "שונים", price: 25.0, unit: "יחידה", image: "images/שונים/בנזין לבן טהור.png" },
+  { id: "SHV-013", name: "אלכוהול טהור 80% 1 ליטר", category: "שונים", price: 38.0, unit: "יחידה", image: "images/שונים/אלכוהול טהור 80%.png" },
+  { id: "SHV-014", name: "אציטון ליטר", category: "שונים", price: 22.0, unit: "יחידה", image: "images/שונים/אציטון ליטר.png" },
+  { id: "SHV-015", name: "בוחשני עץ לשתיה חמה", category: "שונים", price: 12.0, unit: "יחידה", image: "images/שונים/בוחשני עץ לשתיה חמה.jpeg" },
+  { id: "SHV-016", name: "FUJICOM סוללות AAA - 8 יח'", category: "שונים", price: 10.0, unit: "יחידה", image: "images/שונים/FUJICOM סוללות AAA 8 יח.jpg" },
+  { id: "NYK-001", name: "מסיר שומנים 4 ליטר", category: "ניקיון", price: 20.0, unit: "יחידה", image: "images/ניקיון/מסיר שומנים 4 ליטר.jpeg" },
+  { id: "NYK-002", name: "קצף אקונומיקה - סנו ז׳אוול", category: "ניקיון", price: 14.0, unit: "יחידה", image: "images/ניקיון/קצף אקונומיקה - סנו ז_אוול.png" },
+  { id: "NYK-003", name: "נוזל כלים 24% 4 ליטר- סנו DG731", category: "ניקיון", price: 35.0, unit: "יחידה", image: "images/ניקיון/נוזל כלים 24_ 4 ליטר- סנו DG731.png" },
+  { id: "NYK-004", name: "שמפו רצפות - Blue", category: "ניקיון", price: 14.0, unit: "יחידה", image: "images/ניקיון/שמפו רצפות - Blue.png" },
+  { id: "NYK-005", name: "סנו ג׳ט רב תכליתי 4 ליטר", category: "ניקיון", price: 18.5, unit: "יחידה", image: "images/ניקיון/סנו ג_ט רב תכליתי 4 ליטר.png" },
+  { id: "NYK-006", name: "אקונומיקה 4 ליטר", category: "ניקיון", price: 5.0, unit: "יחידה", image: "images/ניקיון/אקונומיקה 4 ליטר.jpeg" },
+  { id: "NYK-007", name: "משמיד עובש - יעקבי", category: "ניקיון", price: 28.0, unit: "יחידה", image: "images/ניקיון/משמיד עובש - יעקבי.png" },
+  { id: "NYK-008", name: "מנקה אסלה ליטר - סנו", category: "ניקיון", price: 8.0, unit: "יחידה", image: "images/ניקיון/מנקה אסלה ליטר - סנו.png" },
+  { id: "NYK-009", name: "אקונומיקה ריחנות 4 ליטר", category: "ניקיון", price: 6.5, unit: "יחידה", image: "images/ניקיון/אקונומיקה ריחנות 4 ליטר.png" },
+  { id: "NYK-010", name: "ג׳ל אורנים - סנו", category: "ניקיון", price: 18.0, unit: "יחידה", image: "images/ניקיון/ג_ל אורנים - סנו.png" },
+  { id: "NYK-011", name: "סבון ידיים 4 ליטר", category: "ניקיון", price: 12.0, unit: "יחידה", image: "images/ניקיון/סבון ידיים 4 ליטר.png" },
+  { id: "NYK-012", name: "רסס נגב - Dettol", category: "ניקיון", price: 12.0, unit: "יחידה", image: "images/ניקיון/רסס נגב - Dettol.png" },
+  { id: "NYK-013", name: "סבון ידיים שלישייה", category: "ניקיון", price: 8.0, unit: "יחידה", image: "images/ניקיון/סבון ידיים שלישייה.png" },
+  { id: "NYK-014", name: "מבריק למדיח - פיניש", category: "ניקיון", price: 18.0, unit: "יחידה", image: "images/ניקיון/מבריק למדיח - פיניש.png" },
+  { id: "NYK-015", name: "מסיר אבנית - קלין", category: "ניקיון", price: 12.0, unit: "יחידה", image: "images/ניקיון/מסיר אבנית - קלין.png" },
+  { id: "NYK-016", name: "מבשם רצפות בניחוח מאסק ליטר - סנו", category: "ניקיון", price: 14.0, unit: "יחידה", image: "images/ניקיון/מבשם רצפות בניחוח מאסק ליטר - סנו.jpg" },
+  { id: "NYK-017", name: "נוזל חלונות 4 ליטר", category: "ניקיון", price: 10.0, unit: "יחידה", image: "images/ניקיון/נוזל חלונות 4 ליטר.png" },
+  { id: "NYK-018", name: "שמפו רצפות 4 ליטר - סנו S255", category: "ניקיון", price: 16.0, unit: "יחידה", image: "images/ניקיון/שמפו רצפות 4 ליטר - סנו S255.png" },
+  { id: "NYK-019", name: "רסס נגב אסטוניש", category: "ניקיון", price: 12.0, unit: "יחידה", image: "images/ניקיון/רסס נגב אסטוניש.png" },
+  { id: "NYK-020", name: "נוזל כלים ליטר 36%", category: "ניקיון", price: 15.0, unit: "יחידה", image: "images/ניקיון/נוזל כלים ליטר 36_.png" },
+  { id: "NYK-021", name: "מסיר שומנים - יעקובי", category: "ניקיון", price: 18.0, unit: "יחידה", image: "images/ניקיון/מסיר שומנים - יעקובי.png" },
+  { id: "NYK-022", name: "כלורקס", category: "ניקיון", price: 18.0, unit: "יחידה", image: "images/ניקיון/כלורקס.png" },
+  { id: "NYK-023", name: "מנקה רב תכליתי - Desytol", category: "ניקיון", price: 13.0, unit: "יחידה", image: "images/ניקיון/מנקה רב תכליתי - Desytol.png" },
+  { id: "NYK-024", name: "מסיר כתמים -KH7", category: "ניקיון", price: 18.0, unit: "יחידה", image: "images/ניקיון/מסיר כתמים -KH7.png" },
+  { id: "NYK-025", name: "נוזל לניקוי פרקט - יעקבי", category: "ניקיון", price: 14.0, unit: "יחידה", image: "images/ניקיון/נוזל לניקוי פרקט - יעקבי.png" },
+  { id: "NYK-027", name: "נוזל כלים 18% ליטר - סנו", category: "ניקיון", price: 9.0, unit: "יחידה", image: "images/ניקיון/נוזל כלים 18_ ליטר - סנו.png" },
+  { id: "NYK-028", name: "נוזל כלים 18% 1.5 ל׳ - קלין", category: "ניקיון", price: 12.0, unit: "יחידה", image: "images/ניקיון/נוזל כלים 1.5 ל_ - קלין.png" },
+  { id: "NYK-029", name: "מסיר שומנים - זוהר דליה", category: "ניקיון", price: 14.0, unit: "יחידה", image: "images/ניקיון/מסיר שומנים - זוהר דליה.png" },
+  { id: "NYK-030", name: "ג׳ל אסלה - סנו", category: "ניקיון", price: 8.0, unit: "יחידה", image: "images/ניקיון/ג_ל אסלה - סנו.png" },
+  { id: "NYK-031", name: "נוזל חלונות ליטר", category: "ניקיון", price: 4.5, unit: "יחידה", image: "images/ניקיון/נוזל חלונות ליטר.png" },
+];
+
+
+    // =============== לוגיקה ===============
+    const categoriesEl = document.getElementById("categories");
+    const productsEl = document.getElementById("products");
+
+    const summaryItemsEl = document.getElementById("summary-items");
+    const summaryTotalEl = document.getElementById("summary-total");
+    const fabCountEl = document.getElementById("fab-count");
+
+    const orderBackdrop = document.getElementById("order-backdrop");
+    const orderTableBody = document.getElementById("order-table-body");
+    const orderTotalItemsEl = document.getElementById("order-total-items");
+    const orderTotalPriceEl = document.getElementById("order-total-price");
+
+    const openOrderBtn = document.getElementById("open-order-btn");
+    const closeOrderBtn = document.getElementById("close-order-btn");
+    const exportCsvBtn = document.getElementById("export-csv-btn");
+    const printPdfBtn = document.getElementById("print-pdf-btn");
+    const clearCartBtn = document.getElementById("clear-cart-btn");
+
+    let activeCategory = null;
+    const cart = {}; // id -> quantity
+
+    function init() {
+        const categories = Array.from(new Set(PRODUCTS.map(p => p.category)));
+        if (categories.length > 0) {
+            activeCategory = categories[0];
+        }
+        renderCategories(categories);
+        renderProducts();
+        updateSummary();
+    }
+
+    function renderCategories(categories) {
+        categoriesEl.innerHTML = "";
+        categories.forEach(cat => {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "cat-btn" + (cat === activeCategory ? " active" : "");
+            btn.textContent = cat;
+            btn.addEventListener("click", () => {
+                activeCategory = cat;
+                document.querySelectorAll(".cat-btn").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                renderProducts();
+            });
+            categoriesEl.appendChild(btn);
+        });
+    }
+
+    function renderProducts() {
+        productsEl.innerHTML = "";
+        const filtered = activeCategory
+            ? PRODUCTS.filter(p => p.category === activeCategory)
+            : PRODUCTS;
+
+        filtered.forEach(product => {
+            const card = document.createElement("div");
+            card.className = "product-card";
+
+            const imgDiv = document.createElement("div");
+            imgDiv.className = "product-img";
+            if (product.image) {
+                imgDiv.style.backgroundImage = `url('${product.image}')`;
+            } else {
+                imgDiv.style.backgroundImage = "none";
+                imgDiv.style.background = "#f0f0f0";
+            }
+
+            const title = document.createElement("div");
+            title.className = "product-title";
+            title.textContent = product.name;
+
+            const metaRow = document.createElement("div");
+            metaRow.className = "product-meta";
+            const skuSpan = document.createElement("span");
+            skuSpan.textContent = "מק״ט: " + product.id;
+            const priceSpan = document.createElement("span");
+            priceSpan.className = "product-price";
+            priceSpan.textContent = product.price.toFixed(2) + " ₪";
+
+            metaRow.appendChild(skuSpan);
+            metaRow.appendChild(priceSpan);
+
+            const qtyRow = document.createElement("div");
+            qtyRow.className = "qty-row";
+
+            const unitSpan = document.createElement("span");
+            unitSpan.className = "unit-label";
+            unitSpan.textContent = product.unit || "יחידה";
+
+            const controls = document.createElement("div");
+            controls.className = "qty-controls";
+
+            const minus = document.createElement("button");
+            minus.type = "button";
+            minus.className = "qty-btn";
+            minus.textContent = "–";
+
+            const input = document.createElement("input");
+            input.type = "number";
+            input.min = "0";
+            input.className = "qty-input";
+            const currentQty = cart[product.id] || 0;
+            input.value = currentQty > 0 ? currentQty : "";
+
+            const plus = document.createElement("button");
+            plus.type = "button";
+            plus.className = "qty-btn";
+            plus.textContent = "+";
+
+            minus.addEventListener("click", () => changeQty(product.id, -1, input));
+            plus.addEventListener("click", () => changeQty(product.id, 1, input));
+            input.addEventListener("change", () => setQtyFromInput(product.id, input));
+
+            controls.appendChild(minus);
+            controls.appendChild(input);
+            controls.appendChild(plus);
+
+            qtyRow.appendChild(unitSpan);
+            qtyRow.appendChild(controls);
+
+            card.appendChild(imgDiv);
+            card.appendChild(title);
+            card.appendChild(metaRow);
+            card.appendChild(qtyRow);
+
+            productsEl.appendChild(card);
+        });
+    }
+
+    function changeQty(id, delta, inputEl) {
+        const current = cart[id] || 0;
+        let next = current + delta;
+        if (next < 0) next = 0;
+        if (next === 0) {
+            delete cart[id];
+            inputEl.value = "";
+        } else {
+            cart[id] = next;
+            inputEl.value = next;
+        }
+        updateSummary();
+    }
+
+    function setQtyFromInput(id, inputEl) {
+        let value = parseInt(inputEl.value, 10);
+        if (isNaN(value) || value <= 0) {
+            delete cart[id];
+            inputEl.value = "";
+        } else {
+            cart[id] = value;
+            inputEl.value = value;
+        }
+        updateSummary();
+    }
+
+    function updateSummary() {
+        let totalItems = 0;
+        let totalPrice = 0;
+
+        for (const [id, qty] of Object.entries(cart)) {
+            const product = PRODUCTS.find(p => p.id === id);
+            if (!product) continue;
+            totalItems += qty;
+            totalPrice += qty * product.price;
+        }
+
+        summaryItemsEl.textContent = totalItems;
+        summaryTotalEl.textContent = totalPrice.toFixed(2) + " ₪";
+        fabCountEl.textContent = totalItems + " פריטים";
+    }
+
+    function openOrderModal() {
+        fillOrderTable();
+        orderBackdrop.style.display = "flex";
+    }
+
+    function closeOrderModal() {
+        orderBackdrop.style.display = "none";
+    }
+
+    function fillOrderTable() {
+        orderTableBody.innerHTML = "";
+        let totalItems = 0;
+        let totalPrice = 0;
+
+        for (const [id, qty] of Object.entries(cart)) {
+            const product = PRODUCTS.find(p => p.id === id);
+            if (!product || qty <= 0) continue;
+
+            const row = document.createElement("tr");
+
+            const skuTd = document.createElement("td");
+            skuTd.textContent = product.id;
+
+            const nameTd = document.createElement("td");
+            nameTd.textContent = product.name;
+
+            const catTd = document.createElement("td");
+            catTd.textContent = product.category;
+
+            const qtyTd = document.createElement("td");
+            qtyTd.textContent = qty;
+
+            const unitTd = document.createElement("td");
+            unitTd.textContent = product.unit || "יחידה";
+
+            const priceTd = document.createElement("td");
+            priceTd.textContent = product.price.toFixed(2);
+
+            const sumTd = document.createElement("td");
+            const lineTotal = qty * product.price;
+            sumTd.textContent = lineTotal.toFixed(2);
+
+            row.appendChild(skuTd);
+            row.appendChild(nameTd);
+            row.appendChild(catTd);
+            row.appendChild(qtyTd);
+            row.appendChild(unitTd);
+            row.appendChild(priceTd);
+            row.appendChild(sumTd);
+
+            orderTableBody.appendChild(row);
+
+            totalItems += qty;
+            totalPrice += lineTotal;
+        }
+
+        orderTotalItemsEl.textContent = totalItems;
+        orderTotalPriceEl.textContent = totalPrice.toFixed(2);
+    }
+
+    function exportToCsv() {
+        const rows = [
+            ["מק\"ט", "שם מוצר", "קטגוריה", "כמות", "יחידה", "מחיר יח׳ (₪)", "סה\"כ (₪)"]
+        ];
+
+        let totalItems = 0;
+        let totalPrice = 0;
+
+        for (const [id, qty] of Object.entries(cart)) {
+            const product = PRODUCTS.find(p => p.id === id);
+            if (!product || qty <= 0) continue;
+
+            const lineTotal = qty * product.price;
+            rows.push([
+                product.id,
+                product.name,
+                product.category,
+                String(qty),
+                product.unit || "יחידה",
+                product.price.toFixed(2),
+                lineTotal.toFixed(2)
+            ]);
+
+            totalItems += qty;
+            totalPrice += lineTotal;
+        }
+
+        rows.push([]);
+        rows.push(["סה\"כ פריטים", String(totalItems), "", "", "סה\"כ לתשלום", "", totalPrice.toFixed(2)]);
+
+        const csvContent = rows.map(row =>
+            row.map(cell => {
+                const c = cell.replace(/"/g, '""');
+                return `"${c}"`;
+            }).join(",")
+        ).join("\r\n");
+
+        const blob = new Blob([csvContent], {type: "text/csv;charset=utf-8;"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "הזמנה_אהרוני.csv";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function printOrderAsPdf() {
+        // ההדפסה תציג רק את המודאל (ראו @media print)
+        window.print();
+    }
+
+    function clearCart() {
+        for (const key of Object.keys(cart)) {
+            delete cart[key];
+        }
+        updateSummary();
+        renderProducts();
+        fillOrderTable();
+    }
+
+    // אירועים
+    openOrderBtn.addEventListener("click", openOrderModal);
+    closeOrderBtn.addEventListener("click", closeOrderModal);
+    exportCsvBtn.addEventListener("click", exportToCsv);
+    printPdfBtn.addEventListener("click", printOrderAsPdf);
+    clearCartBtn.addEventListener("click", clearCart);
+
+    orderBackdrop.addEventListener("click", (e) => {
+        if (e.target === orderBackdrop) {
+            closeOrderModal();
+        }
+    });
+
+    // התחלה
+    init();
+</script>
+</body>
+</html>
