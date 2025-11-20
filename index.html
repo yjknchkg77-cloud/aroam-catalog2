@@ -334,21 +334,71 @@
         }
 
         /* הדפסה – רק טופס ההזמנה */
-        @media print {
-            body * {
-                visibility: hidden !important;
-            }
-            #order-modal,
-            #order-modal * {
-                visibility: visible !important;
-            }
-            #order-modal {
-                position: static !important;
-                inset: auto !important;
-                transform: none !important;
-                box-shadow: none !important;
-            }
-        }
+       @media print {
+    @page {
+        size: A4;
+        margin: 8mm;
+    }
+
+    body * {
+        visibility: hidden !important;
+    }
+
+    #order-modal,
+    #order-modal * {
+        visibility: visible !important;
+    }
+
+    #order-modal {
+        position: static !important;
+        inset: auto !important;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+
+    table {
+        font-size: 11px;
+    }
+
+    tr, td, th {
+        page-break-inside: avoid;
+    }
+      #order-modal {
+        top: 0 !important;
+        left: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        position: absolute !important;
+        transform: none !important;
+    }
+
+    .modal-backdrop {
+        position: absolute !important;
+        inset: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Added to eliminate leftover blank pages from modal backdrop and body dimensions */
+    html {
+        height: auto !important;
+    }
+
+    body {
+        overflow: visible !important;
+        height: auto !important;
+    }
+
+    .modal-backdrop {
+        position: static !important;
+        height: auto !important;
+        width: auto !important;
+        background: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: visible !important;
+    }
+}
     </style>
 </head>
 <body>
@@ -731,18 +781,40 @@
             const catTd = document.createElement("td");
             catTd.textContent = product.category;
 
-            const qtyTd = document.createElement("td");
-            qtyTd.textContent = qty;
+            // כמות (editable)
+const qtyTd = document.createElement("td");
+const qtyInput = document.createElement("input");
+qtyInput.type = "number";
+qtyInput.min = "0";
+qtyInput.value = qty;
+qtyInput.className = "order-qty-input";
+qtyTd.appendChild(qtyInput);
 
-            const unitTd = document.createElement("td");
-            unitTd.textContent = product.unit || "יחידה";
+// יחידה
+const unitTd = document.createElement("td");
+unitTd.textContent = product.unit || "יחידה";
 
-            const priceTd = document.createElement("td");
-            priceTd.textContent = product.price.toFixed(2);
+// מחיר ליחידה (editable)
+const priceTd = document.createElement("td");
+const priceInput = document.createElement("input");
+priceInput.type = "number";
+priceInput.step = "0.01";
+priceInput.min = "0";
+priceInput.value = product.price.toFixed(2);
+priceInput.className = "order-price-input";
+priceTd.appendChild(priceInput);
 
-            const sumTd = document.createElement("td");
-            const lineTotal = qty * product.price;
-            sumTd.textContent = lineTotal.toFixed(2);
+// סה״כ שורה (מחושב)
+const sumTd = document.createElement("td");
+function updateLineTotal() {
+    const newQty = parseFloat(qtyInput.value) || 0;
+    const newPrice = parseFloat(priceInput.value) || 0;
+    sumTd.textContent = (newQty * newPrice).toFixed(2);
+    recalcOrderTotalsFromTable();
+}
+qtyInput.addEventListener("input", updateLineTotal);
+priceInput.addEventListener("input", updateLineTotal);
+updateLineTotal();
 
             row.appendChild(skuTd);
             row.appendChild(nameTd);
@@ -755,13 +827,27 @@
             orderTableBody.appendChild(row);
 
             totalItems += qty;
-            totalPrice += lineTotal;
+            totalPrice += qty * product.price;
         }
 
         orderTotalItemsEl.textContent = totalItems;
         orderTotalPriceEl.textContent = totalPrice.toFixed(2);
     }
+function recalcOrderTotalsFromTable() {
+    let tItems = 0;
+    let tPrice = 0;
 
+    orderTableBody.querySelectorAll("tr").forEach(tr => {
+        const qty = parseFloat(tr.querySelector(".order-qty-input")?.value) || 0;
+        const price = parseFloat(tr.querySelector(".order-price-input")?.value) || 0;
+
+        tItems += qty;
+        tPrice += qty * price;
+    });
+
+    orderTotalItemsEl.textContent = tItems;
+    orderTotalPriceEl.textContent = tPrice.toFixed(2);
+}
     function exportToCsv() {
         const rows = [
             ["מק\"ט", "שם מוצר", "קטגוריה", "כמות", "יחידה", "מחיר יח׳ (₪)", "סה\"כ (₪)"]
@@ -799,8 +885,7 @@
             }).join(",")
         ).join("\r\n");
 
-        const blob = new Blob([csvContent], {type: "text/csv;charset=utf-8;"});
-        const url = URL.createObjectURL(blob);
+const blob = new Blob(["\ufeff" + csvContent], {type: "text/csv;charset=utf-8;"});        const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
         a.download = "הזמנה_אהרוני.csv";
