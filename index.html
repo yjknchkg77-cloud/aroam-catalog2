@@ -334,74 +334,89 @@
         }
 
         /* הדפסה – רק טופס ההזמנה */
-       @media print {
+/* הדפסה – רק טופס ההזמנה */
+@media print {
     @page {
         size: A4;
         margin: 8mm;
     }
 
+    html,
+    body {
+        height: auto !important;
+        overflow: visible !important;
+    }
+
+    /* מסתיר הכל כברירת מחדל */
     body * {
         visibility: hidden !important;
     }
 
+    /* מציגים רק את המודאל והלוגו */
     #order-modal,
-    #order-modal * {
+    #order-modal * ,
+    #print-logo {
         visibility: visible !important;
     }
 
-    #order-modal {
+    /* הבאקדרופ לא יתפוס גובה/רקע */
+    #order-backdrop,
+    .modal-backdrop {
         position: static !important;
         inset: auto !important;
+        height: auto !important;
+        width: auto !important;
+        background: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+    }
+
+    /* המודאל מוצמד לראש הדף, בלי צל ובלי טרנספורם */
+    #order-modal {
+        position: static !important;
+        top: 0 !important;
+        left: 0 !important;
         transform: none !important;
         box-shadow: none !important;
+        width: 100% !important;
+        max-height: none !important;
+        margin: 70px 0 0 0 !important; /* מקום ללוגו */
+        padding: 0 !important;
+    }
+
+    /* הלוגו בפינה עליונה ימנית */
+    #print-logo {
+        display: block !important;
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 140px;
+        margin: 0;
+        padding: 0;
     }
 
     table {
         font-size: 11px;
+        width: 100%;
     }
 
     tr, td, th {
         page-break-inside: avoid;
     }
-      #order-modal {
-        top: 0 !important;
-        left: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        position: absolute !important;
-        transform: none !important;
-    }
 
-    .modal-backdrop {
-        position: absolute !important;
-        inset: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-
-    /* Added to eliminate leftover blank pages from modal backdrop and body dimensions */
-    html {
-        height: auto !important;
-    }
-
-    body {
-        overflow: visible !important;
-        height: auto !important;
-    }
-
-    .modal-backdrop {
-        position: static !important;
-        height: auto !important;
-        width: auto !important;
-        background: none !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        overflow: visible !important;
+    /* אלמנטים שלא רלוונטיים להדפסה */
+    .fab-order,
+    header,
+    .categories,
+    .products {
+        display: none !important;
     }
 }
     </style>
 </head>
 <body>
+    <img id="print-logo" src="images/logo.png" alt="אהרוני שיווק והפצה" style="display:none; width:140px;">
 <div class="app">
     <header>
         <div class="header-main">
@@ -763,8 +778,7 @@
 
     function fillOrderTable() {
         orderTableBody.innerHTML = "";
-        let totalItems = 0;
-        let totalPrice = 0;
+        
 
         for (const [id, qty] of Object.entries(cart)) {
             const product = PRODUCTS.find(p => p.id === id);
@@ -826,12 +840,10 @@ updateLineTotal();
 
             orderTableBody.appendChild(row);
 
-            totalItems += qty;
-            totalPrice += qty * product.price;
+            
         }
 
-        orderTotalItemsEl.textContent = totalItems;
-        orderTotalPriceEl.textContent = totalPrice.toFixed(2);
+      recalcOrderTotalsFromTable();
     }
 function recalcOrderTotalsFromTable() {
     let tItems = 0;
