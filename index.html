@@ -428,19 +428,40 @@
                 display: none !important;
             }
 
-            /* Hide number input arrows in PDF */
-            input[type=number]::-webkit-inner-spin-button,
-            input[type=number]::-webkit-outer-spin-button {
-                -webkit-appearance: none !important;
-                margin: 0 !important;
-            }
-
-            input[type=number] {
-                -moz-appearance: textfield !important;
-                appearance: textfield !important;
-                border: none !important;
-            }
 </style>
+<style>
+/* ===========================
+   iPad Safari PDF Fixes
+   =========================== */
+@supports (-webkit-touch-callout: none) and (not (translate: none)) {
+    @media print {
+
+        /* Remove grey background fully */
+        #print-logo,
+        .modal-backdrop {
+            background: #ffffff !important;
+        }
+
+        /* Ensure modal starts at top */
+        #order-modal {
+            margin-top: 0 !important;
+            position: static !important;
+        }
+
+        /* Shrink table slightly so it fits fully on A4 */
+        table {
+            width: auto !important;
+            max-width: 100% !important;
+            transform: scale(0.90) !important;
+            transform-origin: top right !important;
+        }
+
+        html, body {
+            overflow: visible !important;
+            height: auto !important;
+        }
+    }
+}
 </style>
 </head>
 <body>
@@ -1017,5 +1038,4 @@ const blob = new Blob(["\ufeff" + csvContent], {type: "text/csv;charset=utf-8;"}
     init();
 </script>
 </body>
-</html>
- 
+</html> 
