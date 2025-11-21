@@ -333,135 +333,125 @@
             }
         }
 
-        /* הדפסה – רק טופס ההזמנה */
-        @media print {
-            @page {
-                size: A4;
-                margin: 8mm;
-            }
-
-            html,
-            body {
-                height: auto !important;
-                overflow: visible !important;
-            }
-
-            /* מסתיר הכל כברירת מחדל */
-            body * {
-                visibility: hidden !important;
-            }
-
-            /* מציגים רק את המודאל, הלוגו וטקסט הכותרת */
-            #order-modal,
-            #order-modal * ,
-            #print-logo,
-            #print-header-text {
-                visibility: visible !important;
-            }
-
-            /* הבאקדרופ לא יתפוס גובה/רקע */
-            #order-backdrop,
-            .modal-backdrop {
-                position: static !important;
-                inset: auto !important;
-                height: auto !important;
-                width: auto !important;
-                background: none !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                overflow: visible !important;
-            }
-
-            /* המודאל מוצמד לראש הדף, בלי צל ובלי טרנספורם */
-            #order-modal {
-                position: static !important;
-                top: 0 !important;
-                left: 0 !important;
-                transform: none !important;
-                box-shadow: none !important;
-                width: 100% !important;
-                max-height: none !important;
-                margin: 70px 0 0 0 !important; /* מקום ללוגו */
-                padding: 0 !important;
-            }
-
-            /* הלוגו בפינה עליונה ימנית */
-            #print-logo {
-                display: block !important;
-                position: absolute;
-                top: 0;
-                right: 0;
-                width: 140px;
-                margin: 0;
-                padding: 0;
-            }
-
-            /* טקסט כותרת הדפסה */
-            #print-header-text {
-                display: block !important;
-                position: absolute !important;
-                top: 0 !important;
-                right: 160px !important;
-                font-size: 16px !important;
-                line-height: 1.4 !important;
-                text-align: right !important;
-                white-space: pre-line !important;
-                color: #000 !important;
-                font-weight: 700 !important;
-            }
-
-            table {
-                font-size: 11px;
-                width: 100% !important;
-            }
-
-            tr, td, th {
-                page-break-inside: avoid;
-            }
-
-            /* אלמנטים שלא רלוונטיים להדפסה */
-            .fab-order,
-            header,
-            .categories,
-            .products,
-            .modal-footer {
-                display: none !important;
-            }
-
-</style>
-<style>
 /* ===========================
-   iPad Safari PDF Fixes
+   FIXED – iPad + Desktop PDF Layout (Option B)
    =========================== */
-@supports (-webkit-touch-callout: none) and (not (translate: none)) {
-    @media print {
 
-        /* Remove grey background fully */
-        #print-logo,
-        .modal-backdrop {
-            background: #ffffff !important;
-        }
+@media print {
 
-        /* Ensure modal starts at top */
-        #order-modal {
-            margin-top: 0 !important;
-            position: static !important;
-        }
+    @page {
+        size: A4;
+        margin: 8mm;
+    }
 
-        /* Shrink table slightly so it fits fully on A4 */
-        table {
-            width: auto !important;
-            max-width: 100% !important;
-            transform: scale(0.90) !important;
-            transform-origin: top right !important;
-        }
+    html, body {
+        height: auto !important;
+        overflow: visible !important;
+        background: #ffffff !important;
+    }
 
-        html, body {
-            overflow: visible !important;
-            height: auto !important;
-        }
+    /* Hide everything by default */
+    body * {
+        visibility: hidden !important;
+    }
+
+    /* Show only modal + its content */
+    #order-modal,
+    #order-modal * ,
+    #print-logo,
+    #print-header-text {
+        visibility: visible !important;
+    }
+
+    /* Remove background overlay */
+    #order-backdrop,
+    .modal-backdrop {
+        position: static !important;
+        inset: auto !important;
+        background: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        height: auto !important;
+        width: auto !important;
+        overflow: visible !important;
+    }
+
+    /* Modal formatting */
+    #order-modal {
+        position: static !important;
+        top: 0 !important;
+        left: 0 !important;
+        transform: none !important;
+        box-shadow: none !important;
+        width: 100% !important;
+        max-height: none !important;
+        margin: 80px 0 0 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+    }
+
+    /* Logo – NO grey background */
+    #print-logo {
+        display: block !important;
+        position: absolute !important;
+        top: 0 !important;
+        right: 0 !important;
+        width: 150px !important;
+        background: #ffffff !important;
+        padding: 4px !important;
+        margin: 0 !important;
+    }
+
+    /* Business details text */
+    #print-header-text {
+        display: block !important;
+        position: absolute !important;
+        top: 0 !important;
+        right: 170px !important;
+        font-size: 16px !important;
+        font-weight: 700 !important;
+        line-height: 1.4 !important;
+        text-align: right !important;
+        white-space: pre-line !important;
+        color: #000 !important;
+    }
+
+    /* Table formatting */
+    table {
+        width: 100% !important;
+        font-size: 11px !important;
+        border-collapse: collapse !important;
+    }
+
+    tr, td, th {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    /* Hide non‑printable UI */
+    header,
+    .fab-order,
+    .categories,
+    .products,
+    .modal-footer {
+        display: none !important;
     }
 }
+
+/* ===========================
+   iPad Safari Fix – scale to prevent cutoff
+   =========================== */
+@supports (-webkit-touch-callout: none) and (not (translate: none)) {
+@media print {
+
+    table {
+        zoom: 0.88 !important;
+    }
+
+    html, body {
+        background: #ffffff !important;
+    }
+}}
 </style>
 </head>
 <body>
