@@ -458,6 +458,48 @@
     th:nth-child(5), td:nth-child(5) { width: 8%; }  /* יחידה */
     th:nth-child(6), td:nth-child(6) { width: 12%; } /* מחיר יח׳ */
     th:nth-child(7), td:nth-child(7) { width: 12%; } /* סה״כ */
+
+    /* Hide customer name field only in PDF */
+    #customer-name-input,
+    label[for="customer-name-input"] {
+        display: none !important;
+    }
+    /* Hide the 'סגור' button in PDF */
+    .modal-close {
+        display: none !important;
+    }
+
+    /* Completely remove arrows + borders in PDF */
+    input[type="number"],
+    .order-qty-input,
+    .order-price-input {
+        -webkit-appearance: none !important;
+        appearance: none !important;
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        text-align: right !important;
+        width: 100% !important;
+    }
+
+    /* Remove spin buttons (arrows) */
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button,
+    .order-qty-input::-webkit-inner-spin-button,
+    .order-qty-input::-webkit-outer-spin-button,
+    .order-price-input::-webkit-inner-spin-button,
+    .order-price-input::-webkit-outer-spin-button {
+        -webkit-appearance: none !important;
+        margin: 0 !important;
+    }
+
+    /* Remove borders in PDF table cells */
+    td input[type="number"] {
+        border: none !important;
+        background: transparent !important;
+    }
 }
 
 /* ===========================
@@ -1033,9 +1075,30 @@ const blob = new Blob(["\ufeff" + csvContent], {type: "text/csv;charset=utf-8;"}
         fillOrderTable();
     }
 
+    // שינוי כותרת בזמן פתיחת ההזמנה כדי שישמש כ־default name בקובץ PDF
+    function updatePdfTitle() {
+        const name = customerNameInput.value.trim();
+        document.title = name ? `הצעת מחיר – ${name}` : "הצעת מחיר – לקוח";
+    }
+
+    // החזרת הכותרת למצב רגיל
+    function resetTitle() {
+        document.title = "קטלוג אהרוני - הזמנה ללקוח";
+    }
+
+    // שינוי כותרת בעת פתיחת המודאל
+    openOrderBtn.addEventListener("click", () => {
+        updatePdfTitle();
+        openOrderModal();
+    });
+
+    // שינוי כותרת לפי שינוי שם הלקוח
+    customerNameInput.addEventListener("input", updatePdfTitle);
+
+    // החזרת כותרת בעת סגירת המודאל
+    closeOrderBtn.addEventListener("click", resetTitle);
+
     // אירועים
-    openOrderBtn.addEventListener("click", openOrderModal);
-    closeOrderBtn.addEventListener("click", closeOrderModal);
     exportCsvBtn.addEventListener("click", exportToCsv);
     printPdfBtn.addEventListener("click", printOrderAsPdf);
     clearCartBtn.addEventListener("click", clearCart);
