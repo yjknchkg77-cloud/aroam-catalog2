@@ -334,85 +334,113 @@
         }
 
         /* הדפסה – רק טופס ההזמנה */
-/* הדפסה – רק טופס ההזמנה */
-@media print {
-    @page {
-        size: A4;
-        margin: 8mm;
-    }
+        @media print {
+            @page {
+                size: A4;
+                margin: 8mm;
+            }
 
-    html,
-    body {
-        height: auto !important;
-        overflow: visible !important;
-    }
+            html,
+            body {
+                height: auto !important;
+                overflow: visible !important;
+            }
 
-    /* מסתיר הכל כברירת מחדל */
-    body * {
-        visibility: hidden !important;
-    }
+            /* מסתיר הכל כברירת מחדל */
+            body * {
+                visibility: hidden !important;
+            }
 
-    /* מציגים רק את המודאל והלוגו */
-    #order-modal,
-    #order-modal * ,
-    #print-logo {
-        visibility: visible !important;
-    }
+            /* מציגים רק את המודאל, הלוגו וטקסט הכותרת */
+            #order-modal,
+            #order-modal * ,
+            #print-logo,
+            #print-header-text {
+                visibility: visible !important;
+            }
 
-    /* הבאקדרופ לא יתפוס גובה/רקע */
-    #order-backdrop,
-    .modal-backdrop {
-        position: static !important;
-        inset: auto !important;
-        height: auto !important;
-        width: auto !important;
-        background: none !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        overflow: visible !important;
-    }
+            /* הבאקדרופ לא יתפוס גובה/רקע */
+            #order-backdrop,
+            .modal-backdrop {
+                position: static !important;
+                inset: auto !important;
+                height: auto !important;
+                width: auto !important;
+                background: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: visible !important;
+            }
 
-    /* המודאל מוצמד לראש הדף, בלי צל ובלי טרנספורם */
-    #order-modal {
-        position: static !important;
-        top: 0 !important;
-        left: 0 !important;
-        transform: none !important;
-        box-shadow: none !important;
-        width: 100% !important;
-        max-height: none !important;
-        margin: 70px 0 0 0 !important; /* מקום ללוגו */
-        padding: 0 !important;
-    }
+            /* המודאל מוצמד לראש הדף, בלי צל ובלי טרנספורם */
+            #order-modal {
+                position: static !important;
+                top: 0 !important;
+                left: 0 !important;
+                transform: none !important;
+                box-shadow: none !important;
+                width: 100% !important;
+                max-height: none !important;
+                margin: 70px 0 0 0 !important; /* מקום ללוגו */
+                padding: 0 !important;
+            }
 
-    /* הלוגו בפינה עליונה ימנית */
-    #print-logo {
-        display: block !important;
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 140px;
-        margin: 0;
-        padding: 0;
-    }
+            /* הלוגו בפינה עליונה ימנית */
+            #print-logo {
+                display: block !important;
+                position: absolute;
+                top: 0;
+                right: 0;
+                width: 140px;
+                margin: 0;
+                padding: 0;
+            }
 
-    table {
-        font-size: 11px;
-        width: 100%;
-    }
+            /* טקסט כותרת הדפסה */
+            #print-header-text {
+                display: block !important;
+                position: absolute !important;
+                top: 0 !important;
+                right: 160px !important;
+                font-size: 16px !important;
+                line-height: 1.4 !important;
+                text-align: right !important;
+                white-space: pre-line !important;
+                color: #000 !important;
+                font-weight: 700 !important;
+            }
 
-    tr, td, th {
-        page-break-inside: avoid;
-    }
+            table {
+                font-size: 11px;
+                width: 100% !important;
+            }
 
-    /* אלמנטים שלא רלוונטיים להדפסה */
-    .fab-order,
-    header,
-    .categories,
-    .products {
-        display: none !important;
-    }
-}
+            tr, td, th {
+                page-break-inside: avoid;
+            }
+
+            /* אלמנטים שלא רלוונטיים להדפסה */
+            .fab-order,
+            header,
+            .categories,
+            .products,
+            .modal-footer {
+                display: none !important;
+            }
+
+            /* Hide number input arrows in PDF */
+            input[type=number]::-webkit-inner-spin-button,
+            input[type=number]::-webkit-outer-spin-button {
+                -webkit-appearance: none !important;
+                margin: 0 !important;
+            }
+
+            input[type=number] {
+                -moz-appearance: textfield !important;
+                appearance: textfield !important;
+                border: none !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -450,9 +478,28 @@
 <div id="order-backdrop" class="modal-backdrop" style="display:none;">
     <div id="order-modal" class="modal">
         <div class="modal-header">
-            <div class="modal-title">הזמנה ללקוח</div>
+            <div class="modal-title">
+                הצעת מחיר – <span id="customer-name-display">שם הלקוח</span>
+                <br>
+                <span id="order-date-display" style="font-size:0.8rem; font-weight:400;">תאריך: ____</span>
+            </div>
             <button class="modal-close" id="close-order-btn" type="button">סגור</button>
         </div>
+        <div style="margin: 0.5rem 0;">
+            <label for="customer-name-input" style="font-size:0.85rem;">שם הלקוח:</label>
+            <input id="customer-name-input" type="text" style="width: 100%; padding: 0.3rem; font-size:0.9rem; border:1px solid #ccc; border-radius:0.3rem;">
+        </div>
+        <div style="margin: 0.5rem 0;">
+            <label for="order-date" style="font-size:0.85rem;">תאריך:</label>
+            <input id="order-date" type="date" style="width: 100%; padding: 0.3rem; font-size:0.9rem; border:1px solid #ccc; border-radius:0.3rem;" value="">
+        </div>
+        <div id="print-header-text" style="display:none;">
+<strong>
+אהרוני שיווק והפצה
+היצירה 16, אור יהודה
+טלפון: 03-6346236 | פקס: 072-2449493
+</strong>
+</div>
         <div class="modal-body">
             <table>
                 <thead>
@@ -616,6 +663,39 @@
 
     let activeCategory = null;
     const cart = {}; // id -> quantity
+
+    const customerNameInput = document.getElementById("customer-name-input");
+    const customerNameDisplay = document.getElementById("customer-name-display");
+    const orderDateInput = document.getElementById("order-date");
+    const orderDateDisplay = document.getElementById("order-date-display");
+
+orderDateInput.addEventListener("input", () => {
+    const d = orderDateInput.value;
+    if (!d) {
+        orderDateDisplay.textContent = "תאריך: ____";
+        return;
+    }
+    const parts = d.split("-");
+    const formattedDisplay = `${parts[2]}/${parts[1]}/${parts[0]}`;
+    orderDateDisplay.textContent = "תאריך: " + formattedDisplay;
+});
+
+    // קובע תאריך של היום כברירת מחדל
+    (function setDefaultDate() {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        const formattedInput = `${yyyy}-${mm}-${dd}`;
+        const formattedDisplay = `${dd}/${mm}/${yyyy}`;
+        orderDateInput.value = formattedInput;
+        orderDateDisplay.textContent = "תאריך: " + formattedDisplay;
+    })();
+
+    customerNameInput.addEventListener("input", () => {
+        const name = customerNameInput.value.trim();
+        customerNameDisplay.textContent = name ? name : "שם הלקוח";
+    });
 
     function init() {
         const categories = Array.from(new Set(PRODUCTS.map(p => p.category)));
