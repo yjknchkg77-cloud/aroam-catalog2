@@ -441,7 +441,9 @@
                 border: none !important;
             }
         }
-    </style>
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
     <img id="print-logo" src="images/logo.png" alt="אהרוני שיווק והפצה" style="display:none; width:140px;">
@@ -987,9 +989,45 @@ const blob = new Blob(["\ufeff" + csvContent], {type: "text/csv;charset=utf-8;"}
         URL.revokeObjectURL(url);
     }
 
-    function printOrderAsPdf() {
-        // ההדפסה תציג רק את המודאל (ראו @media print)
-        window.print();
+    async function printOrderAsPdf() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: "p", unit: "mm", format: "a4" });
+
+        // לוגו
+        try {
+            const img = new Image();
+            img.src = "images/logo.png";
+            await img.decode();
+            doc.addImage(img, "PNG", 160, 5, 35, 20);
+        } catch(e) {}
+
+        // כותרת + שם הלקוח
+        const customer = document.getElementById("customer-name-display").textContent.trim();
+        const date = document.getElementById("order-date-display").textContent.trim();
+
+        doc.setFontSize(16);
+        doc.text(`הצעת מחיר – ${customer}`, 10, 20, { align: "right" });
+
+        doc.setFontSize(12);
+        doc.text(date, 10, 28, { align: "right" });
+
+        // טבלה
+        const rows = [];
+        orderTableBody.querySelectorAll("tr").forEach(tr => {
+            const cols = Array.from(tr.querySelectorAll("td")).map(td => td.textContent.trim());
+            rows.push(cols);
+        });
+
+        doc.autoTable({
+            startY: 35,
+            head: [["מק״ט", "שם מוצר", "קטגוריה", "כמות", "יחידה", "מחיר יח׳ (₪)", "סה״כ (₪)"]],
+            body: rows,
+            styles: { fontSize: 9, halign: "right" },
+            headStyles: { fillColor: [230, 230, 230] },
+            margin: { right: 5, left: 5 }
+        });
+
+        doc.save("הצעת_מחיר.pdf");
     }
 
     function clearCart() {
