@@ -416,6 +416,18 @@
         color: #000 !important;
     }
 
+    /* Official greeting text in PDF */
+    #print-greeting {
+        display: block !important;
+        position: absolute !important;
+        top: 70px !important;
+        right: 0 !important;
+        font-size: 16px !important;
+        font-weight: 700 !important;
+        color: #000 !important;
+        white-space: pre-line !important;
+    }
+
     /* Table formatting */
     table {
         width: 100% !important;
@@ -466,6 +478,12 @@
     }
     /* Hide the 'סגור' button in PDF */
     .modal-close {
+        display: none !important;
+    }
+
+    /* Hide second date field only in PDF */
+    label[for="order-date"],
+    #order-date {
         display: none !important;
     }
 
@@ -554,8 +572,11 @@
     <div id="order-modal" class="modal">
         <div class="modal-header">
             <div class="modal-title">
-                הצעת מחיר – <span id="customer-name-display">שם הלקוח</span>
-                <br>
+                <div id="modal-greeting">
+                    לכבוד: <span id="customer-name-display">שם הלקוח</span>
+                    <br>
+                    הנדון: הצעת מחיר
+                </div>
                 <span id="order-date-display" style="font-size:0.8rem; font-weight:400;">תאריך: ____</span>
             </div>
             <button class="modal-close" id="close-order-btn" type="button">סגור</button>
@@ -575,6 +596,7 @@
 טלפון: 03-6346236 | פקס: 072-2449493
 </strong>
 </div>
+        
         <div class="modal-body">
             <table>
                 <thead>
@@ -597,6 +619,11 @@
                     <td></td>
                     <td>סה״כ לתשלום</td>
                     <td id="order-total-price">0</td>
+                </tr>
+                <tr>
+                    <td colspan="5"></td>
+                    <td>סה״כ כולל מע״מ (18%)</td>
+                    <td id="order-total-with-vat">0</td>
                 </tr>
                 </tfoot>
             </table>
@@ -793,6 +820,7 @@ orderDateInput.addEventListener("input", () => {
     customerNameInput.addEventListener("input", () => {
         const name = customerNameInput.value.trim();
         customerNameDisplay.textContent = name ? name : "שם הלקוח";
+        document.getElementById("greeting-customer-name").textContent = name ? name : "שם הלקוח";
     });
 
     function init() {
@@ -1037,6 +1065,8 @@ function recalcOrderTotalsFromTable() {
 
     orderTotalItemsEl.textContent = tItems;
     orderTotalPriceEl.textContent = tPrice.toFixed(2);
+    const totalVat = Math.round(tPrice * 1.18);
+    document.getElementById("order-total-with-vat").textContent = totalVat;
 }
     function exportToCsv() {
         const rows = [
