@@ -534,6 +534,12 @@
         background: #ffffff !important;
     }
 }}
+@media print {
+    #search-input,
+    #products-datalist {
+        display: none !important;
+    }
+}
 </style>
 </head>
 <body>
@@ -552,6 +558,16 @@
             </div>
         </div>
         <div class="categories" id="categories"></div>
+        <div style="margin-top:0.5rem;">
+    <input
+        id="search-input"
+        type="text"
+        placeholder="חיפוש מוצר / מק״ט…"
+        list="products-datalist"
+        style="width:100%; padding:0.4rem 0.6rem; font-size:0.9rem; border:1px solid #ccc; border-radius:0.4rem;"
+    >
+    <datalist id="products-datalist"></datalist>
+</div>
     </header>
 
     <main>
@@ -560,14 +576,38 @@
 </div>
 
 <!-- כפתור הזמנה צף -->
-<div class="fab-order">
+<div class="fab-order" style="display:flex; gap:0.5rem;">
     <button class="fab-btn" id="open-order-btn" type="button">
         הצגת הזמנה
         <span class="count" id="fab-count">0 פריטים</span>
     </button>
+    <button class="fab-btn" id="add-custom-item-btn" type="button" style="background:#455a64;">
+        ➕ מוצר חדש
+    </button>
 </div>
 
 <!-- מודאל הזמנה -->
+
+<!-- מודאל מוצר חופשי -->
+<div id="custom-item-backdrop" class="modal-backdrop" style="display:none;">
+    <div class="modal" style="max-width:400px;">
+        <div class="modal-header">
+            <div class="modal-title">הוספת מוצר חדש</div>
+            <button class="modal-close" id="close-custom-item-btn" type="button">סגור</button>
+        </div>
+        <div class="modal-body">
+            <label>שם מוצר</label>
+            <input id="custom-name" type="text" style="width:100%;margin-bottom:0.4rem;">
+            <label>כמות</label>
+            <input id="custom-qty" type="number" value="1" min="1" style="width:100%;margin-bottom:0.4rem;">
+            <label>מחיר ליחידה</label>
+            <input id="custom-price" type="number" value="0" min="0" step="0.01" style="width:100%;">
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" id="add-custom-to-order">הוסף להזמנה</button>
+        </div>
+    </div>
+</div>
 <div id="order-backdrop" class="modal-backdrop" style="display:none;">
     <div id="order-modal" class="modal">
         <div class="modal-header">
@@ -837,6 +877,11 @@
     const categoriesEl = document.getElementById("categories");
     const productsEl = document.getElementById("products");
 
+// ===== Search (global) =====
+const searchInput = document.getElementById("search-input");
+const dataList = document.getElementById("products-datalist");
+let searchQuery = "";
+
     const summaryItemsEl = document.getElementById("summary-items");
     const summaryTotalEl = document.getElementById("summary-total");
     const fabCountEl = document.getElementById("fab-count");
@@ -854,6 +899,8 @@
 
     let activeCategory = null;
     const cart = {}; // id -> quantity
+    const customItems = [];
+    let customCounter = 1;
 
     const customerNameInput = document.getElementById("customer-name-input");
     const customerNameDisplay = document.getElementById("customer-name-display");
@@ -894,10 +941,27 @@ orderDateInput.addEventListener("input", () => {
         if (categories.length > 0) {
             activeCategory = categories[0];
         }
-        renderCategories(categories);
-        renderProducts();
-        updateSummary();
+       renderCategories(categories);
+populateSearchSuggestions();
+renderProducts();
+updateSummary();
     }
+
+function populateSearchSuggestions() {
+    if (!dataList) return;
+    dataList.innerHTML = "";
+
+    const seen = new Set();
+    PRODUCTS.forEach(p => {
+        const label = p.name;
+        if (!label || seen.has(label)) return;
+        seen.add(label);
+
+        const opt = document.createElement("option");
+        opt.value = label;
+        dataList.appendChild(opt);
+    });
+}
 
     function renderCategories(categories) {
         categoriesEl.innerHTML = "";
@@ -907,7 +971,18 @@ orderDateInput.addEventListener("input", () => {
             btn.className = "cat-btn" + (cat === activeCategory ? " active" : "");
             btn.textContent = cat;
             btn.addEventListener("click", () => {
+                searchQuery = "";
+                if (searchInput) {
+                    searchInput.value = "";
+                }
                 activeCategory = cat;
+
+                // אם יש חיפוש פעיל – לא מסננים לפי קטגוריה
+                if (searchQuery && searchQuery.trim() !== "") {
+                    renderProducts();
+                    return;
+                }
+
                 document.querySelectorAll(".cat-btn").forEach(b => b.classList.remove("active"));
                 btn.classList.add("active");
                 renderProducts();
@@ -917,10 +992,21 @@ orderDateInput.addEventListener("input", () => {
     }
 
     function renderProducts() {
-        productsEl.innerHTML = "";
-        const filtered = activeCategory
-            ? PRODUCTS.filter(p => p.category === activeCategory)
-            : PRODUCTS;
+       productsEl.innerHTML = "";
+
+const q = (searchQuery || "").trim().toLowerCase();
+
+// אם יש חיפוש: מחפש בכל הקטגוריות
+// אם אין חיפוש: מסנן לפי קטגוריה פעילה
+const filtered = PRODUCTS.filter(p => {
+    if (q) {
+        return (
+            (p.name || "").toLowerCase().includes(q) ||
+            (p.id || "").toLowerCase().includes(q)
+        );
+    }
+    return !activeCategory || p.category === activeCategory;
+});
 
         filtered.forEach(product => {
             const card = document.createElement("div");
@@ -1068,39 +1154,39 @@ orderDateInput.addEventListener("input", () => {
             catTd.textContent = product.category;
 
             // כמות (editable)
-const qtyTd = document.createElement("td");
-const qtyInput = document.createElement("input");
-qtyInput.type = "number";
-qtyInput.min = "0";
-qtyInput.value = qty;
-qtyInput.className = "order-qty-input";
-qtyTd.appendChild(qtyInput);
+            const qtyTd = document.createElement("td");
+            const qtyInput = document.createElement("input");
+            qtyInput.type = "number";
+            qtyInput.min = "0";
+            qtyInput.value = qty;
+            qtyInput.className = "order-qty-input";
+            qtyTd.appendChild(qtyInput);
 
-// יחידה
-const unitTd = document.createElement("td");
-unitTd.textContent = product.unit || "יחידה";
+            // יחידה
+            const unitTd = document.createElement("td");
+            unitTd.textContent = product.unit || "יחידה";
 
-// מחיר ליחידה (editable)
-const priceTd = document.createElement("td");
-const priceInput = document.createElement("input");
-priceInput.type = "number";
-priceInput.step = "0.01";
-priceInput.min = "0";
-priceInput.value = product.price.toFixed(2);
-priceInput.className = "order-price-input";
-priceTd.appendChild(priceInput);
+            // מחיר ליחידה (editable)
+            const priceTd = document.createElement("td");
+            const priceInput = document.createElement("input");
+            priceInput.type = "number";
+            priceInput.step = "0.01";
+            priceInput.min = "0";
+            priceInput.value = product.price.toFixed(2);
+            priceInput.className = "order-price-input";
+            priceTd.appendChild(priceInput);
 
-// סה״כ שורה (מחושב)
-const sumTd = document.createElement("td");
-function updateLineTotal() {
-    const newQty = parseFloat(qtyInput.value) || 0;
-    const newPrice = parseFloat(priceInput.value) || 0;
-    sumTd.textContent = (newQty * newPrice).toFixed(2);
-    recalcOrderTotalsFromTable();
-}
-qtyInput.addEventListener("input", updateLineTotal);
-priceInput.addEventListener("input", updateLineTotal);
-updateLineTotal();
+            // סה״כ שורה (מחושב)
+            const sumTd = document.createElement("td");
+            function updateLineTotal() {
+                const newQty = parseFloat(qtyInput.value) || 0;
+                const newPrice = parseFloat(priceInput.value) || 0;
+                sumTd.textContent = (newQty * newPrice).toFixed(2);
+                recalcOrderTotalsFromTable();
+            }
+            qtyInput.addEventListener("input", updateLineTotal);
+            priceInput.addEventListener("input", updateLineTotal);
+            updateLineTotal();
 
             row.appendChild(skuTd);
             row.appendChild(nameTd);
@@ -1111,11 +1197,27 @@ updateLineTotal();
             row.appendChild(sumTd);
 
             orderTableBody.appendChild(row);
-
-            
         }
 
-      recalcOrderTotalsFromTable();
+        // הוספת מוצרים חופשיים
+        customItems.forEach(item => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${item.id}</td>
+                <td>${item.name}</td>
+                <td>${item.category}</td>
+                <td><input type="number" class="order-qty-input" value="${item.qty}"></td>
+                <td>${item.unit}</td>
+                <td><input type="number" class="order-price-input" value="${item.price.toFixed(2)}"></td>
+                <td>${(item.qty * item.price).toFixed(2)}</td>
+            `;
+            row.querySelectorAll("input").forEach(() => {
+                row.addEventListener("input", recalcOrderTotalsFromTable);
+            });
+            orderTableBody.appendChild(row);
+        });
+
+        recalcOrderTotalsFromTable();
     }
 function recalcOrderTotalsFromTable() {
     let tItems = 0;
@@ -1189,6 +1291,7 @@ const blob = new Blob(["\ufeff" + csvContent], {type: "text/csv;charset=utf-8;"}
         for (const key of Object.keys(cart)) {
             delete cart[key];
         }
+        customItems.length = 0;
         updateSummary();
         renderProducts();
         fillOrderTable();
@@ -1218,6 +1321,13 @@ const blob = new Blob(["\ufeff" + csvContent], {type: "text/csv;charset=utf-8;"}
     closeOrderBtn.addEventListener("click", resetTitle);
 
     // אירועים
+    // Search events
+if (searchInput) {
+    searchInput.addEventListener("input", () => {
+        searchQuery = searchInput.value || "";
+        renderProducts();
+    });
+}
     exportCsvBtn.addEventListener("click", exportToCsv);
     printPdfBtn.addEventListener("click", printOrderAsPdf);
     clearCartBtn.addEventListener("click", clearCart);
@@ -1228,8 +1338,45 @@ const blob = new Blob(["\ufeff" + csvContent], {type: "text/csv;charset=utf-8;"}
         }
     });
 
-    // התחלה
-    init();
+</script>
+
+<script>
+// לוגיקת מוצר חופשי
+const addCustomBtn = document.getElementById("add-custom-item-btn");
+const customBackdrop = document.getElementById("custom-item-backdrop");
+
+addCustomBtn.addEventListener("click", () => {
+    customBackdrop.style.display = "flex";
+});
+
+document.getElementById("close-custom-item-btn").addEventListener("click", () => {
+    customBackdrop.style.display = "none";
+});
+
+document.getElementById("add-custom-to-order").addEventListener("click", () => {
+    const name = document.getElementById("custom-name").value.trim();
+    const qty = parseFloat(document.getElementById("custom-qty").value) || 0;
+    const price = parseFloat(document.getElementById("custom-price").value) || 0;
+    if (!name || qty <= 0) return;
+
+    customItems.push({
+        id: "CUSTOM-" + customCounter++,
+        name,
+        category: "מוצר חופשי",
+        unit: "יחידה",
+        qty,
+        price
+    });
+
+    document.getElementById("custom-name").value = "";
+    document.getElementById("custom-qty").value = 1;
+    document.getElementById("custom-price").value = 0;
+    customBackdrop.style.display = "none";
+    updateSummary();
+});
+
+// התחלה
+init();
 </script>
 </body>
 </html> 
